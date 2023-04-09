@@ -58,7 +58,7 @@ public class AnnouncementService : IAnnouncementService
         //    await _repository.AddAsync(address, cancellationToken);
         //}
 
-        await _addressService.AddAddress(new()
+        var address = await _addressService.AddAddress(new()
         {
             Street = announcement.Street,
             City = announcement.City,
@@ -66,22 +66,25 @@ public class AnnouncementService : IAnnouncementService
             Number = announcement.StreetNumber,
         }, requestingUser);
 
-        var address = _addressService.GetAddressByFields(announcement.County, announcement.City, announcement.Street, announcement.StreetNumber);
-
-        var building = await _repository.GetAsync(new BuildingSpec(announcement.Surface, announcement.RoomsNumber, announcement.Year, address.Id), cancellationToken);
+        if (!address.IsOk)
+        {
+            address.Result = (await _addressService.GetAddressByFields(announcement.County, announcement.City, announcement.Street, announcement.StreetNumber, cancellationToken)).Result;
+        }
+        
+        var building = await _repository.GetAsync(new BuildingSpec(announcement.Surface, announcement.RoomsNumber, announcement.Year, address.Result!.Id), cancellationToken);
 
         if (building != null)
         {
             return ServiceResponse.FromError(new(HttpStatusCode.Conflict, "There is already an announcement for this building!", ErrorCodes.CannotAdd));
         }
-        
+
         building = new Building
         {
             Surface = announcement.Surface,
             RoomsNumber = announcement.RoomsNumber,
             Year = announcement.Year,
-            Address = address,
-            AddressId = address.Id,
+            Address = _addressService.GetNonDTOAddressById(address.Result.Id).Result.Result!,
+            AddressId = address.Result!.Id,
         };
         await _repository.AddAsync(building, cancellationToken);
 

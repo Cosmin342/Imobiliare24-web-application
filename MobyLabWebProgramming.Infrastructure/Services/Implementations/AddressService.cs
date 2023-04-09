@@ -20,6 +20,15 @@ public class AddressService : IAddressService
         _repository = repository;
     }
 
+    public async Task<ServiceResponse<AddressDTO>> GetAddressById(Guid id, CancellationToken cancellationToken = default)
+    {
+        var result = await _repository.GetAsync(new AddressSpec(id), cancellationToken);
+
+        return result != null ?
+            ServiceResponse<AddressDTO>.ForSuccess(result) :
+            ServiceResponse<AddressDTO>.FromError(CommonErrors.AnnouncementNotFound);
+    }
+
     public async Task<ServiceResponse<AddressDTO>> GetAddressByFields(string city, string county, string street, int streetNumber, CancellationToken cancellationToken = default)
     {
         var result = await _repository.GetAsync(new AddressSpec(city, county, street, streetNumber), cancellationToken);
@@ -29,13 +38,13 @@ public class AddressService : IAddressService
             ServiceResponse<AddressDTO>.FromError(CommonErrors.AddressNotFound);
     }
 
-    public async Task<ServiceResponse> AddAddress(AddressAddDTO newAddress, UserDTO? requestingUser, CancellationToken cancellationToken = default)
+    public async Task<ServiceResponse<AddressDTO>> AddAddress(AddressAddDTO newAddress, UserDTO? requestingUser, CancellationToken cancellationToken = default)
     {
         var address = await _repository.GetAsync(new AddressSpec(newAddress.City, newAddress.County, newAddress.Street, newAddress.Number), cancellationToken);
 
         if (address != null)
         {
-            return ServiceResponse.FromError(new(HttpStatusCode.Conflict, "There is already an address!", ErrorCodes.CannotAdd));
+            return ServiceResponse<AddressDTO>.FromError(new(HttpStatusCode.Conflict, "There is already an address!", ErrorCodes.CannotAdd));
         }
 
         var addressToAdd = new Address
@@ -46,8 +55,30 @@ public class AddressService : IAddressService
             Number = newAddress.Number
         };
 
-        await _repository.AddAsync(addressToAdd, cancellationToken);
+        var result = await _repository.AddAsync(addressToAdd, cancellationToken);
 
-        return ServiceResponse.ForSuccess();
+        return ServiceResponse<AddressDTO>.ForSuccess(new AddressDTO
+        {
+            Id = result.Id,
+            City = result.City,
+            County = result.County,
+            Street = result.Street,
+            Number = result.Number
+        });
+    }
+    public async Task<ServiceResponse<Address>> GetNonDTOAddressById(Guid id, CancellationToken cancellationToken = default)
+    {
+        var address = await _repository.GetAsync(new AddressAddSpec(id), cancellationToken);
+
+        //var address = new Address
+        //{
+        //    Id = addressDTO.Id,
+        //    City = addressDTO.City,
+        //    County = addressDTO.County,
+        //    Street = addressDTO.Street,
+        //    Number = addressDTO.Number
+        //};
+
+        return ServiceResponse<Address>.ForSuccess(address);
     }
 }
