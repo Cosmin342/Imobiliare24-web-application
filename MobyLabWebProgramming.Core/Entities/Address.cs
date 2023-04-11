@@ -7,5 +7,5 @@ public class Address : BaseEntity
     public string Street { get; set; } = default!;    
     public int Number { get; set; } = default!;
 
-    public ICollection<Building> Buildings { get; set; } = default!;
+    public ICollection<Building> Buildings { get; set; } = new List<Building>();
 }

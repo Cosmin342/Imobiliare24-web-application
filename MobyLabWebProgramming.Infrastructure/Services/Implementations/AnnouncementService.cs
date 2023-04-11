@@ -1,5 +1,4 @@
-﻿using Ardalis.Specification;
-using MobyLabWebProgramming.Core.DataTransferObjects;
+﻿using MobyLabWebProgramming.Core.DataTransferObjects;
 using MobyLabWebProgramming.Core.Entities;
 using MobyLabWebProgramming.Core.Enums;
 using MobyLabWebProgramming.Core.Errors;
@@ -44,49 +43,32 @@ public class AnnouncementService : IAnnouncementService
             return ServiceResponse.FromError(new(HttpStatusCode.Forbidden, "Only the admin or a personnel user can add announcements!", ErrorCodes.CannotAdd));
         }
 
-        //var address = await _repository.GetAsync(new AddressSpec(announcement.City, announcement.County, announcement.Street, announcement.StreetNumber), cancellationToken);
-
-        //if (address == null)
-        //{
-        //    address = new Address
-        //    {
-        //        City = announcement.City,
-        //        County = announcement.County,
-        //        Street = announcement.Street,
-        //        Number = announcement.StreetNumber
-        //    };
-        //    await _repository.AddAsync(address, cancellationToken);
-        //}
-
-        var address = await _addressService.AddAddress(new()
+        if (announcement.Title.Length < 16 || announcement.Title.Length > 255)
         {
-            Street = announcement.Street,
-            City = announcement.City,
-            County = announcement.County,
-            Number = announcement.StreetNumber,
-        }, requestingUser);
-
-        if (!address.IsOk)
-        {
-            address.Result = (await _addressService.GetAddressByFields(announcement.County, announcement.City, announcement.Street, announcement.StreetNumber, cancellationToken)).Result;
-        }
-        
-        var building = await _repository.GetAsync(new BuildingSpec(announcement.Surface, announcement.RoomsNumber, announcement.Year, address.Result!.Id), cancellationToken);
-
-        if (building != null)
-        {
-            return ServiceResponse.FromError(new(HttpStatusCode.Conflict, "There is already an announcement for this building!", ErrorCodes.CannotAdd));
+            return ServiceResponse.FromError(new(HttpStatusCode.Forbidden,
+                "Title of an announcement must have minimum 16 and maximum 255 characters!", ErrorCodes.CannotAdd));
         }
 
-        building = new Building
+        if (announcement.Description.Length < 80 || announcement.Title.Length > 1023)
         {
-            Surface = announcement.Surface,
-            RoomsNumber = announcement.RoomsNumber,
-            Year = announcement.Year,
-            Address = _addressService.GetNonDTOAddressById(address.Result.Id).Result.Result!,
-            AddressId = address.Result!.Id,
-        };
-        await _repository.AddAsync(building, cancellationToken);
+            return ServiceResponse.FromError(new(HttpStatusCode.Forbidden,
+                "Description of an announcement must have minimum 80 and maximum 1023 characters!", ErrorCodes.CannotAdd));
+        }
+
+        if (announcement.Price <= 0)
+        {
+            return ServiceResponse.FromError(new(HttpStatusCode.Forbidden,
+                "Price of an announcement cannot be negative or 0!", ErrorCodes.CannotAdd));
+        }
+
+        var building = await _buildingService.AddBuilding(announcement.Building, requestingUser);
+
+        if (!building.IsOk)
+        {
+            return ServiceResponse.FromError(new(HttpStatusCode.Conflict, building.Error.Message, ErrorCodes.CannotAdd));
+        }
+
+        var newBuilding = await _buildingService.GetBuildingNonDTO(building.Result.Id);
 
         await _repository.AddAsync(new Announcement
         {
@@ -94,9 +76,9 @@ public class AnnouncementService : IAnnouncementService
             Description = announcement.Description,
             Price = announcement.Price,
             IsActive = true,
-            BuildingId = building.Id,
-            Building = building,
-            UserId = requestingUser.Id,
+            BuildingId = newBuilding.Result.Id,
+            Building = newBuilding.Result,
+            UserId = requestingUser.Id
         }, cancellationToken);
 
         return ServiceResponse.ForSuccess();

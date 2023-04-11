@@ -1,4 +1,5 @@
 ﻿using Ardalis.Specification;
+using Microsoft.EntityFrameworkCore;
 using MobyLabWebProgramming.Core.Entities;
 using MobyLabWebProgramming.Core.Specifications;
 using System.Linq.Expressions;
@@ -21,5 +22,19 @@ public sealed class AddressSpec : BaseSpec<AddressSpec, Address, AddressDTO>
     public AddressSpec(string city, string county, string street, int streetNumber)
     {
         Query.Where(e => e.City == city && e.County == county && e.Street == street && e.Number == streetNumber);
+    }
+
+    public AddressSpec(string? search)
+    {
+        search = !string.IsNullOrWhiteSpace(search) ? search.Trim() : null;
+
+        if (search == null)
+        {
+            return;
+        }
+
+        var searchExpr = $"%{search.Replace(" ", "%")}%";
+
+        Query.Where(e => EF.Functions.ILike(e.Street, searchExpr));
     }
 }

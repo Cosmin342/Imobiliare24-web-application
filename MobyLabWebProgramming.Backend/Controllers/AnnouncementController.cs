@@ -1,11 +1,9 @@
 ﻿using MobyLabWebProgramming.Infrastructure.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
-using MobyLabWebProgramming.Core.DataTransferObjects;
 using MobyLabWebProgramming.Core.Responses;
 using MobyLabWebProgramming.Infrastructure.Services.Interfaces;
 using MobyLabWebProgramming.Infrastructure.Extensions;
-using MobyLabWebProgramming.Core.Entities;
 using MobyLabWebProgramming.Core.Requests;
 
 namespace MobyLabWebProgramming.Backend.Controllers;
@@ -23,7 +21,7 @@ public class AnnouncementController : AuthorizedController
 
     [Authorize]
     [HttpGet("{id:guid}")]
-    public async Task<ActionResult<RequestResponse<AnnouncementDTO>>> GetById([FromRoute] Guid id) // The FromRoute attribute will bind the id from the route to this parameter.
+    public async Task<ActionResult<RequestResponse<AnnouncementDTO>>> GetById([FromRoute] Guid id)
     {
         var currentUser = await GetCurrentUser();
 
@@ -53,6 +51,17 @@ public class AnnouncementController : AuthorizedController
             this.FromServiceResponse(await _announcementService.AddAnnouncement(announcement, currentUser.Result)) :
             this.ErrorMessageResult(currentUser.Error);
     }
+
+    //[Authorize]
+    //[HttpPost]
+    //public async Task<ActionResult<RequestResponse>> Subscribe([FromRoute] Guid id)
+    //{
+    //    var currentUser = await GetCurrentUser();
+
+    //    return currentUser.Result != null ?
+    //        this.FromServiceResponse(await _announcementService.AddAnnouncement(announcement, currentUser.Result)) :
+    //        this.ErrorMessageResult(currentUser.Error);
+    //}
 
     [Authorize]
     [HttpDelete("{id:guid}")]

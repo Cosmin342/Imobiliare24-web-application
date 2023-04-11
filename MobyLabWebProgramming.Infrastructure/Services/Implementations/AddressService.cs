@@ -1,15 +1,13 @@
 ﻿using MobyLabWebProgramming.Core.DataTransferObjects;
 using MobyLabWebProgramming.Core.Entities;
+using MobyLabWebProgramming.Core.Enums;
 using MobyLabWebProgramming.Core.Errors;
+using MobyLabWebProgramming.Core.Requests;
 using MobyLabWebProgramming.Core.Responses;
 using MobyLabWebProgramming.Infrastructure.Database;
 using MobyLabWebProgramming.Infrastructure.Repositories.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using Org.BouncyCastle.Utilities.Net;
 using System.Net;
-using System.Text;
-using System.Threading.Tasks;
 
 public class AddressService : IAddressService
 {
@@ -26,7 +24,14 @@ public class AddressService : IAddressService
 
         return result != null ?
             ServiceResponse<AddressDTO>.ForSuccess(result) :
-            ServiceResponse<AddressDTO>.FromError(CommonErrors.AnnouncementNotFound);
+            ServiceResponse<AddressDTO>.FromError(CommonErrors.AddressNotFound);
+    }
+
+    public async Task<ServiceResponse<PagedResponse<AddressDTO>>> GetAddresses(PaginationSearchQueryParams pagination, UserDTO? requestingUser, CancellationToken cancellationToken = default)
+    {
+        var result = await _repository.PageAsync(pagination, new AddressSpec(pagination.Search), cancellationToken);
+
+        return ServiceResponse<PagedResponse<AddressDTO>>.ForSuccess(result);
     }
 
     public async Task<ServiceResponse<AddressDTO>> GetAddressByFields(string city, string county, string street, int streetNumber, CancellationToken cancellationToken = default)
@@ -52,7 +57,8 @@ public class AddressService : IAddressService
             City = newAddress.City,
             County = newAddress.County,
             Street = newAddress.Street,
-            Number = newAddress.Number
+            Number = newAddress.Number,
+            Buildings = new List<Building>()
         };
 
         var result = await _repository.AddAsync(addressToAdd, cancellationToken);
@@ -70,15 +76,50 @@ public class AddressService : IAddressService
     {
         var address = await _repository.GetAsync(new AddressAddSpec(id), cancellationToken);
 
-        //var address = new Address
-        //{
-        //    Id = addressDTO.Id,
-        //    City = addressDTO.City,
-        //    County = addressDTO.County,
-        //    Street = addressDTO.Street,
-        //    Number = addressDTO.Number
-        //};
+        return address != null ?
+            ServiceResponse<Address>.ForSuccess(address) :
+            ServiceResponse<Address>.FromError(CommonErrors.AddressNotFound);
+    }
 
-        return ServiceResponse<Address>.ForSuccess(address);
+    public async Task<ServiceResponse> Update(AddressDTO address, UserDTO? requestingUser = default, CancellationToken cancellationToken = default)
+    {
+        var newAddress = await _repository.GetAsync(new AddressAddSpec(address.Id), cancellationToken);
+
+        if (newAddress != null)
+        {
+            newAddress.Street = address.Street;
+            newAddress.Number = address.Number;
+            newAddress.City = address.City;
+            newAddress.County = address.County;
+
+            await _repository.UpdateAsync(newAddress, cancellationToken);
+
+            return ServiceResponse.ForSuccess();
+        }
+
+        return ServiceResponse.FromError(new(HttpStatusCode.NotFound, "This address doesn't exist!", ErrorCodes.EntityNotFound));
+    }
+
+    public async Task<ServiceResponse> DeleteAddress(Guid id, UserDTO? requestingUser = default, CancellationToken cancellationToken = default)
+    {
+        if (requestingUser != null && requestingUser.Role != UserRoleEnum.Admin)
+        {
+            return ServiceResponse.FromError(new(HttpStatusCode.Forbidden, "Only an admin can delete an address!", ErrorCodes.CannotDelete));
+        }
+
+        // Temp solution
+        var result = await _repository.GetAsync(new BuildingSpec(new Address
+        {
+            Id = id,
+        }), cancellationToken);
+
+        if (result != null)
+        {
+            return ServiceResponse.FromError(new(HttpStatusCode.Forbidden, "There are some buildings registered at this address!", ErrorCodes.CannotDelete));
+        }
+
+        await _repository.DeleteAsync<Address>(id, cancellationToken);
+
+        return ServiceResponse.ForSuccess();
     }
 }

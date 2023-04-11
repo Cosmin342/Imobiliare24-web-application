@@ -22,9 +22,4 @@ public class User : BaseEntity
     public ICollection<Announcement> Announcements { get; set; } = default!;
     public ICollection<AnnouncementUser> FollowedAnnouncements { get; set; } = default!;
     public ICollection<UserNotification> Notifications { get; set; } = default!;
-
-    public static implicit operator User(UserDTO v)
-    {
-        throw new NotImplementedException();
-    }
 }

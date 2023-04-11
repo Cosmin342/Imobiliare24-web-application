@@ -17,7 +17,7 @@ public sealed class AnnouncementSpec : BaseSpec<AnnouncementSpec, Announcement, 
         UserId = e.UserId,
         Building = new()
         {
-            Id = e.Id,
+            Id = e.Building.Id,
             Address = new()
             {
                 Id = e.Building.Address.Id,
