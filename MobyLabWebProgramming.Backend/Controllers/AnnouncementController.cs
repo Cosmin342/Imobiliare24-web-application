@@ -42,6 +42,17 @@ public class AnnouncementController : AuthorizedController
     }
 
     [Authorize]
+    [HttpGet]
+    public async Task<ActionResult<RequestResponse<PagedResponse<AnnouncementDTO>>>> GetPageSubscribed([FromQuery] PaginationSearchQueryParams pagination)
+    {
+        var currentUser = await GetCurrentUser();
+
+        return currentUser.Result != null ?
+            this.FromServiceResponse(await _announcementService.GetAnnouncementsSubscribed(pagination, currentUser.Result.Id)) :
+            this.ErrorMessageResult<PagedResponse<AnnouncementDTO>>(currentUser.Error);
+    }
+
+    [Authorize]
     [HttpPost]
     public async Task<ActionResult<RequestResponse>> Add([FromBody] AnnouncementAddDTO announcement)
     {
@@ -52,16 +63,20 @@ public class AnnouncementController : AuthorizedController
             this.ErrorMessageResult(currentUser.Error);
     }
 
-    //[Authorize]
-    //[HttpPost]
-    //public async Task<ActionResult<RequestResponse>> Subscribe([FromRoute] Guid id)
-    //{
-    //    var currentUser = await GetCurrentUser();
+    [Authorize]
+    [HttpPost("{announcementId:guid}")]
+    public async Task<ActionResult<RequestResponse>> Subscribe([FromRoute] Guid announcementId)
+    {
+        var currentUser = await GetCurrentUser();
 
-    //    return currentUser.Result != null ?
-    //        this.FromServiceResponse(await _announcementService.AddAnnouncement(announcement, currentUser.Result)) :
-    //        this.ErrorMessageResult(currentUser.Error);
-    //}
+        return currentUser.Result != null ?
+            this.FromServiceResponse(await _announcementService.SubscribeToAnnouncement(new AnnouncementUserAddDTO
+            {
+                UserId = currentUser.Result.Id,
+                AnnouncementId = announcementId
+            })) :
+            this.ErrorMessageResult(currentUser.Error);
+    }
 
     [Authorize]
     [HttpDelete("{id:guid}")]

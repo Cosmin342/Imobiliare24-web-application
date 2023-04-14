@@ -175,6 +175,7 @@ public static class WebApplicationBuilderExtensions
             .AddTransient<IAddressRepository, AddressRepository>()
             .AddTransient<IUserFileService, UserFileService>()
             .AddTransient<IAnnouncementService, AnnouncementService>()
+            .AddTransient<IAnnouncementUserService, AnnouncementUserService>()
             .AddTransient<IAddressService, AddressService>()
             .AddTransient<IBuildingService, BuildingService>()
             .AddTransient<IMailService, MailService>();

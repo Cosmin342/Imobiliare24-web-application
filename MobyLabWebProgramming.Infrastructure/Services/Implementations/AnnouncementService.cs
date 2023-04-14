@@ -12,18 +12,18 @@ public class AnnouncementService : IAnnouncementService
 {
     private readonly IRepository<WebAppDatabaseContext> _repository;
     private readonly IBuildingService _buildingService;
-    private readonly IAddressService _addressService;
+    private readonly IAnnouncementUserService _announcementUserService;
 
-    public AnnouncementService(IRepository<WebAppDatabaseContext> repository, IBuildingService buildingService, IAddressService addressService)
+    public AnnouncementService(IRepository<WebAppDatabaseContext> repository, IBuildingService buildingService, IAnnouncementUserService announcementUserService)
     {
         _repository = repository;
         _buildingService = buildingService;
-        _addressService = addressService;
+        _announcementUserService = announcementUserService;
     }
     public async Task<ServiceResponse<AnnouncementDTO>> GetAnnouncement(Guid id, CancellationToken cancellationToken = default)
     {
         var result = await _repository.GetAsync(new AnnouncementSpec(id), cancellationToken);
-        
+
         return result != null ?
             ServiceResponse<AnnouncementDTO>.ForSuccess(result) :
             ServiceResponse<AnnouncementDTO>.FromError(CommonErrors.AnnouncementNotFound);
@@ -32,6 +32,13 @@ public class AnnouncementService : IAnnouncementService
     public async Task<ServiceResponse<PagedResponse<AnnouncementDTO>>> GetAnnouncements(PaginationSearchQueryParams pagination, bool? active, bool? forCurrentUser, Guid userId, CancellationToken cancellationToken = default)
     {
         var result = await _repository.PageAsync(pagination, new AnnouncementSpec(pagination.Search, active, forCurrentUser, userId), cancellationToken);
+
+        return ServiceResponse<PagedResponse<AnnouncementDTO>>.ForSuccess(result);
+    }
+
+    public async Task<ServiceResponse<PagedResponse<AnnouncementDTO>>> GetAnnouncementsSubscribed(PaginationSearchQueryParams pagination, Guid userId, CancellationToken cancellationToken = default)
+    {
+        var result = await _repository.PageAsync(pagination, new FollowedAnnouncementsSpec(userId), cancellationToken);
 
         return ServiceResponse<PagedResponse<AnnouncementDTO>>.ForSuccess(result);
     }
@@ -106,7 +113,7 @@ public class AnnouncementService : IAnnouncementService
         return ServiceResponse.ForSuccess();
     }
 
-    public async Task<ServiceResponse> DisableAnnouncement(Guid id, UserDTO? requestingUser = default, CancellationToken cancellationToken = default)
+    public async Task<ServiceResponse> DisableAnnouncement(Guid id, UserDTO requestingUser, CancellationToken cancellationToken = default)
     {
         var announcement = await _repository.GetAsync(new AnnouncementUpdateSpec(id), cancellationToken);
 
@@ -116,7 +123,7 @@ public class AnnouncementService : IAnnouncementService
             {
                 return ServiceResponse.FromError(new(HttpStatusCode.Forbidden, "Only the user who posted this announcement on an administrator can disable it!", ErrorCodes.CannotUpdate));
             }
-            
+
             announcement.IsActive = false;
 
             await _repository.UpdateAsync(announcement, cancellationToken);
@@ -148,5 +155,24 @@ public class AnnouncementService : IAnnouncementService
         }
 
         return ServiceResponse.FromError(new(HttpStatusCode.NotFound, "This announcement doesn't exist!", ErrorCodes.EntityNotFound));
+    }
+
+    public async Task<ServiceResponse> SubscribeToAnnouncement(AnnouncementUserAddDTO announcementUser, CancellationToken cancellationToken = default)
+    {
+        var announcement = await GetAnnouncement(announcementUser.AnnouncementId);
+
+        if (announcement.Result != null && announcement.Result.UserId == announcementUser.UserId)
+        {
+            return ServiceResponse.FromError(new(HttpStatusCode.NotFound, "An user can not subscribe to his own announcement!", ErrorCodes.CannotAdd));
+        }
+
+        var result = await _announcementUserService.AddAnnouncementUserAssociation(announcementUser);
+
+        if (!result.IsOk)
+        {
+            return ServiceResponse.FromError(result.Error);
+        }
+
+        return ServiceResponse.ForSuccess();
     }
 }
