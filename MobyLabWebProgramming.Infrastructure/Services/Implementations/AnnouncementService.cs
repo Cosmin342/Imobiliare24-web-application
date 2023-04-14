@@ -70,16 +70,24 @@ public class AnnouncementService : IAnnouncementService
 
         var newBuilding = await _buildingService.GetBuildingNonDTO(building.Result.Id);
 
-        await _repository.AddAsync(new Announcement
+        var newAnnouncement = new Announcement
         {
             Title = announcement.Title,
             Description = announcement.Description,
             Price = announcement.Price,
             IsActive = true,
             BuildingId = newBuilding.Result.Id,
-            Building = newBuilding.Result,
             UserId = requestingUser.Id
-        }, cancellationToken);
+        };
+
+        await _repository.AddAsync(newAnnouncement, cancellationToken);
+
+        var result = await _buildingService.UpdateAnnouncementId(newAnnouncement.Id, newBuilding.Result.Id);
+
+        if (!result.IsOk)
+        {
+            return ServiceResponse.FromError(new(HttpStatusCode.Conflict, result.Error.Message, ErrorCodes.CannotAdd));
+        }
 
         return ServiceResponse.ForSuccess();
     }

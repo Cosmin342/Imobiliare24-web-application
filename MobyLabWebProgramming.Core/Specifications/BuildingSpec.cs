@@ -24,9 +24,18 @@ public sealed class BuildingSpec : BaseSpec<BuildingSpec, Building, BuildingDTO>
     public BuildingSpec(Guid id) : base(id)
     {
     }
+
     public BuildingSpec(Address address)
     {
         Query.Where(e => e.AddressId == address.Id);
+    }
+    public BuildingSpec(int? roomsNumber)
+    {
+        if (roomsNumber == null)
+        {
+            return;
+        }
+        Query.Where(e => e.RoomsNumber >= roomsNumber);
     }
 
     public BuildingSpec(int surface, int roomsNumber, int year, Guid addressId)

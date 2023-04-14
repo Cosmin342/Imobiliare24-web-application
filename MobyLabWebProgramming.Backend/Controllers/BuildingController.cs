@@ -1,6 +1,7 @@
 ﻿
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using MobyLabWebProgramming.Core.Requests;
 using MobyLabWebProgramming.Core.Responses;
 using MobyLabWebProgramming.Infrastructure.Authorization;
 using MobyLabWebProgramming.Infrastructure.Extensions;
@@ -28,6 +29,16 @@ public class BuildingController : AuthorizedController
             this.ErrorMessageResult<BuildingDTO>(currentUser.Error);
     }
 
+    [Authorize]
+    [HttpGet]
+    public async Task<ActionResult<RequestResponse<PagedResponse<BuildingDTO>>>> GetPage([FromQuery] PaginationSearchQueryParams pagination, [FromQuery] int? roomsNumber)
+    {
+        var currentUser = await GetCurrentUser();
+
+        return currentUser.Result != null ?
+            this.FromServiceResponse(await _buildingService.GetBuildings(pagination, roomsNumber)) :
+            this.ErrorMessageResult<PagedResponse<BuildingDTO>>(currentUser.Error);
+    }
 
     [Authorize]
     [HttpPost]
@@ -37,6 +48,29 @@ public class BuildingController : AuthorizedController
 
         return currentUser.Result != null ?
             this.FromServiceResponse(await _buildingService.AddBuilding(building, currentUser.Result)).Result! :
+            this.ErrorMessageResult(currentUser.Error);
+    }
+
+
+    [Authorize]
+    [HttpDelete("{id:guid}")]
+    public async Task<ActionResult<RequestResponse>> Delete([FromRoute] Guid id)
+    {
+        var currentUser = await GetCurrentUser();
+
+        return currentUser.Result != null ?
+            this.FromServiceResponse(await _buildingService.DeleteBuilding(id, currentUser.Result)) :
+            this.ErrorMessageResult(currentUser.Error);
+    }
+
+    [Authorize]
+    [HttpPut]
+    public async Task<ActionResult<RequestResponse>> Update([FromBody] BuildingUpdateDTO building)
+    {
+        var currentUser = await GetCurrentUser();
+
+        return currentUser.Result != null ?
+            this.FromServiceResponse(await _buildingService.Update(building, currentUser.Result)) :
             this.ErrorMessageResult(currentUser.Error);
     }
 }

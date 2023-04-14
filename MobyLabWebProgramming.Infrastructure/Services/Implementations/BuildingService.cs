@@ -1,15 +1,10 @@
 ﻿using MobyLabWebProgramming.Core.DataTransferObjects;
-using MobyLabWebProgramming.Core.Entities;
 using MobyLabWebProgramming.Core.Errors;
+using MobyLabWebProgramming.Core.Requests;
 using MobyLabWebProgramming.Core.Responses;
 using MobyLabWebProgramming.Infrastructure.Database;
 using MobyLabWebProgramming.Infrastructure.Repositories.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
-using System.Text;
-using System.Threading.Tasks;
 public class BuildingService : IBuildingService
 {
     private readonly IRepository<WebAppDatabaseContext> _repository;
@@ -27,16 +22,14 @@ public class BuildingService : IBuildingService
 
         return result != null ?
             ServiceResponse<BuildingDTO>.ForSuccess(result) :
-            ServiceResponse<BuildingDTO>.FromError(CommonErrors.AnnouncementNotFound);
+            ServiceResponse<BuildingDTO>.FromError(CommonErrors.BuildingNotFound);
     }
 
-    public async Task<ServiceResponse<BuildingDTO>> GetBuildingsWithAddress(Address address, CancellationToken cancellationToken = default)
+    public async Task<ServiceResponse<PagedResponse<BuildingDTO>>> GetBuildings(PaginationSearchQueryParams pagination, int? roomsNumber, CancellationToken cancellationToken = default)
     {
-        var result = await _repository.GetAsync(new BuildingSpec(address), cancellationToken);
+        var result = await _repository.PageAsync(pagination, new BuildingSpec(roomsNumber), cancellationToken);
 
-        return result != null ?
-            ServiceResponse<BuildingDTO>.ForSuccess(result) :
-            ServiceResponse<BuildingDTO>.FromError(CommonErrors.AnnouncementNotFound);
+        return ServiceResponse<PagedResponse<BuildingDTO>>.ForSuccess(result);
     }
 
     public async Task<ServiceResponse<Building>> GetBuildingNonDTO(Guid id, CancellationToken cancellationToken = default)
@@ -45,7 +38,7 @@ public class BuildingService : IBuildingService
 
         return result != null ?
             ServiceResponse<Building>.ForSuccess(result) :
-            ServiceResponse<Building>.FromError(CommonErrors.AnnouncementNotFound);
+            ServiceResponse<Building>.FromError(CommonErrors.BuildingNotFound);
     }
 
     public async Task<ServiceResponse<BuildingDTO>> AddBuilding(BuildingAddDTO building, UserDTO? requestingUser, CancellationToken cancellationToken = default)
@@ -69,7 +62,7 @@ public class BuildingService : IBuildingService
         }
 
         var newBuilding = await _repository.GetAsync(new BuildingAddSpec(building.Surface, building.RoomsNumber, building.Year, address.Result!.Id), cancellationToken);
-        
+
         if (newBuilding != null)
         {
             return ServiceResponse<BuildingDTO>.FromError(new(HttpStatusCode.Conflict, "There is already a building at that address!", ErrorCodes.CannotAdd));
@@ -83,15 +76,68 @@ public class BuildingService : IBuildingService
             AddressId = address.Result.Id,
         };
 
-        var result = await _repository.AddAsync(newBuilding, cancellationToken);
+        var addedBuilding = await _repository.AddAsync(newBuilding, cancellationToken);
 
         return ServiceResponse<BuildingDTO>.ForSuccess(new BuildingDTO
         {
-            Id = result.Id,
-            RoomsNumber = result.RoomsNumber,
-            Surface = result.Surface,
-            Year = result.Year,
+            Id = addedBuilding.Id,
+            RoomsNumber = addedBuilding.RoomsNumber,
+            Surface = addedBuilding.Surface,
+            Year = addedBuilding.Year,
         });
+    }
+
+    public async Task<ServiceResponse> Update(BuildingUpdateDTO building, UserDTO? requestingUser = default, CancellationToken cancellationToken = default)
+    {
+        var newBuilding = await _repository.GetAsync(new BuildingAddSpec(building.Id), cancellationToken);
+
+        if (newBuilding != null)
+        {
+            newBuilding.Surface = building.Surface;
+            newBuilding.RoomsNumber = building.RoomsNumber;
+            newBuilding.Year = building.Year;
+
+            await _repository.UpdateAsync(newBuilding, cancellationToken);
+
+            return ServiceResponse.ForSuccess();
+        }
+
+        return ServiceResponse.FromError(new(HttpStatusCode.NotFound, "This building doesn't exist!", ErrorCodes.EntityNotFound));
+    }
+
+    public async Task<ServiceResponse> DeleteBuilding(Guid id, UserDTO? requestingUser = default, CancellationToken cancellationToken = default)
+    {
+        var building = await _repository.GetAsync(new BuildingAddSpec(id), cancellationToken);
+
+        if (building == null)
+        {
+            return ServiceResponse<BuildingDTO>.FromError(CommonErrors.BuildingNotFound);
+        }
+
+        if (building.AnnouncementId != Guid.Empty)
+        {
+            return ServiceResponse<BuildingDTO>.FromError(new(HttpStatusCode.Conflict, "There is an announcement for this building!", ErrorCodes.CannotDelete));
+        }
+
+        await _repository.DeleteAsync<Building>(id, cancellationToken);
+
+        return ServiceResponse.ForSuccess();
+    }
+
+    public async Task<ServiceResponse> UpdateAnnouncementId(Guid anouncementId, Guid buildingId, UserDTO? requestingUser = default, CancellationToken cancellationToken = default)
+    {
+        var newBuilding = await _repository.GetAsync(new BuildingAddSpec(buildingId), cancellationToken);
+
+        if (newBuilding != null)
+        {
+            newBuilding.AnnouncementId = anouncementId;
+
+            await _repository.UpdateAsync(newBuilding, cancellationToken);
+
+            return ServiceResponse.ForSuccess();
+        }
+
+        return ServiceResponse.FromError(new(HttpStatusCode.NotFound, "This building doesn't exist!", ErrorCodes.EntityNotFound));
     }
 }
 
