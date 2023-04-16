@@ -13,12 +13,15 @@ public class AnnouncementService : IAnnouncementService
     private readonly IRepository<WebAppDatabaseContext> _repository;
     private readonly IBuildingService _buildingService;
     private readonly IAnnouncementUserService _announcementUserService;
+    private readonly INotificationService _notificationService;
 
-    public AnnouncementService(IRepository<WebAppDatabaseContext> repository, IBuildingService buildingService, IAnnouncementUserService announcementUserService)
+    public AnnouncementService(IRepository<WebAppDatabaseContext> repository, IBuildingService buildingService,
+        IAnnouncementUserService announcementUserService, INotificationService notificationService)
     {
         _repository = repository;
         _buildingService = buildingService;
         _announcementUserService = announcementUserService;
+        _notificationService = notificationService;
     }
     public async Task<ServiceResponse<AnnouncementDTO>> GetAnnouncement(Guid id, CancellationToken cancellationToken = default)
     {
@@ -127,6 +130,12 @@ public class AnnouncementService : IAnnouncementService
             announcement.IsActive = false;
 
             await _repository.UpdateAsync(announcement, cancellationToken);
+
+            var result = await _notificationService.AddNotificationForAnnouncement(new NotificationAddDTO
+            {
+                Title = "Announcement disabled",
+                Content = "Announcement \"" + announcement.Title + "\" was disabled"
+            }, true, announcement.Id, requestingUser);
 
             return ServiceResponse.ForSuccess();
         }

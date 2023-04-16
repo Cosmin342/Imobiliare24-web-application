@@ -178,6 +178,8 @@ public static class WebApplicationBuilderExtensions
             .AddTransient<IAnnouncementUserService, AnnouncementUserService>()
             .AddTransient<IAddressService, AddressService>()
             .AddTransient<IBuildingService, BuildingService>()
+            .AddTransient<INotificationService, NotificationService>()
+            .AddTransient<IUserNotificationService, UserNotificationService>()
             .AddTransient<IMailService, MailService>();
 
         return builder;

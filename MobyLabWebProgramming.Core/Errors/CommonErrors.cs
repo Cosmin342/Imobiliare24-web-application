@@ -12,5 +12,7 @@ public static class CommonErrors
     public static ErrorMessage BuildingNotFound => new(HttpStatusCode.NotFound, "Building doesn't exist!", ErrorCodes.EntityNotFound);
     public static ErrorMessage AddressNotFound => new(HttpStatusCode.NotFound, "Address doesn't exist!", ErrorCodes.EntityNotFound);
     public static ErrorMessage FileNotFound => new(HttpStatusCode.NotFound, "File not found on disk!", ErrorCodes.PhysicalFileNotFound);
+    public static ErrorMessage NotificationNotFound => new(HttpStatusCode.NotFound, "Notification doesn't exist!", ErrorCodes.EntityNotFound);
+    public static ErrorMessage NotificationsNotFound => new(HttpStatusCode.NotFound, "There are not notifications for current user!", ErrorCodes.EntityNotFound);
     public static ErrorMessage TechnicalSupport => new(HttpStatusCode.InternalServerError, "An unknown error occurred, contact the technical support!", ErrorCodes.TechnicalError);
 }

@@ -1,5 +1,6 @@
 ﻿using MobyLabWebProgramming.Core.DataTransferObjects;
 using MobyLabWebProgramming.Core.Errors;
+using MobyLabWebProgramming.Core.Requests;
 using MobyLabWebProgramming.Core.Responses;
 using MobyLabWebProgramming.Infrastructure.Database;
 using MobyLabWebProgramming.Infrastructure.Repositories.Interfaces;
@@ -30,5 +31,12 @@ public class AnnouncementUserService : IAnnouncementUserService
         }, cancellationToken);
 
         return ServiceResponse.ForSuccess();
+    }
+
+    public async Task<ServiceResponse<List<UserDTO>>> GetUsersForAnnouncement(Guid announcementId, CancellationToken cancellationToken = default)
+    {
+        var result = await _repository.ListAsync(new SubscribedUsersSpec(announcementId), cancellationToken);
+
+        return ServiceResponse<List<UserDTO>>.ForSuccess(result);
     }
 }
