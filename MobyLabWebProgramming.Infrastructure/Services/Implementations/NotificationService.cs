@@ -35,7 +35,8 @@ public class NotificationService : INotificationService
         return await _userNotificationService.GetNotificationsForUser(pagination, userId, cancellationToken);
     }
 
-    public async Task<ServiceResponse> AddNotificationForAnnouncement(NotificationAddDTO notification, bool automaticNotification, Guid announcementId, UserDTO? requestingUser, CancellationToken cancellationToken = default)
+    public async Task<ServiceResponse> AddNotificationForAnnouncement(NotificationAddDTO notification, bool automaticNotification,
+        Guid announcementId, UserDTO? requestingUser, List<UserDTO>? subscribers, CancellationToken cancellationToken = default)
     {
         if (!automaticNotification)
         {
@@ -53,14 +54,16 @@ public class NotificationService : INotificationService
 
         await _repository.AddAsync(newNotification, cancellationToken);
 
-        var users = await _announcementUserService.GetUsersForAnnouncement(announcementId);
+        var users = subscribers != null?
+            subscribers:
+            (await _announcementUserService.GetUsersForAnnouncement(announcementId)).Result;
 
-        if (users.Result == null)
+        if (users == null)
         {
             return ServiceResponse.ForSuccess();
         }
 
-        await _userNotificationService.AddUserNotificationAssociations(newNotification.Id, users.Result, cancellationToken);
+        await _userNotificationService.AddUserNotificationAssociations(newNotification.Id, users, cancellationToken);
 
         return ServiceResponse.ForSuccess();
     }

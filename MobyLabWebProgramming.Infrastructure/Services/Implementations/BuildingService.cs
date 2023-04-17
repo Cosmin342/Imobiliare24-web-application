@@ -129,7 +129,7 @@ public class BuildingService : IBuildingService
             {
                 Title = "Announcement updated",
                 Content = "Announcement \"" + newBuilding.Announcement.Title + "\" was updated"
-            }, true, newBuilding.AnnouncementId, requestingUser);
+            }, true, newBuilding.AnnouncementId, requestingUser, null);
 
             if (!result.IsOk)
             {

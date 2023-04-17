@@ -14,14 +14,16 @@ public class AnnouncementService : IAnnouncementService
     private readonly IBuildingService _buildingService;
     private readonly IAnnouncementUserService _announcementUserService;
     private readonly INotificationService _notificationService;
+    private readonly IUserNotificationService _userNotificationService;
 
     public AnnouncementService(IRepository<WebAppDatabaseContext> repository, IBuildingService buildingService,
-        IAnnouncementUserService announcementUserService, INotificationService notificationService)
+        IAnnouncementUserService announcementUserService, INotificationService notificationService, IUserNotificationService userNotificationService)
     {
         _repository = repository;
         _buildingService = buildingService;
         _announcementUserService = announcementUserService;
         _notificationService = notificationService;
+        _userNotificationService = userNotificationService;
     }
     public async Task<ServiceResponse<AnnouncementDTO>> GetAnnouncement(Guid id, CancellationToken cancellationToken = default)
     {
@@ -120,13 +122,15 @@ public class AnnouncementService : IAnnouncementService
             return ServiceResponse.FromError(new(HttpStatusCode.Forbidden, "Only the user who posted announcement can delete the announcement!", ErrorCodes.CannotDelete));
         }
 
+        var subscribers = await _announcementUserService.GetUsersForAnnouncement(id);
+
         await _repository.DeleteAsync<Announcement>(id, cancellationToken);
 
         var result = await _notificationService.AddNotificationForAnnouncement(new NotificationAddDTO
         {
             Title = "Announcement deleted",
             Content = "Announcement \"" + announcement!.Title + "\" was deleted"
-        }, true, id, requestingUser);
+        }, true, id, requestingUser, subscribers.Result);
 
         if (!result.IsOk)
         {
@@ -155,11 +159,11 @@ public class AnnouncementService : IAnnouncementService
             {
                 Title = "Announcement disabled",
                 Content = "Announcement \"" + announcement.Title + "\" was disabled"
-            }, true, announcement.Id, requestingUser);
+            }, true, announcement.Id, requestingUser, null);
 
             if (!result.IsOk)
             {
-                return ServiceResponse.FromError(new(HttpStatusCode.Conflict, result.Error.Message, ErrorCodes.CannotAdd));
+                return result;
             }
 
             return ServiceResponse.ForSuccess();
@@ -173,7 +177,7 @@ public class AnnouncementService : IAnnouncementService
         var result = checkRequirements(announcement.Title, announcement.Description, announcement.Price);
         if (!result.IsOk)
         {
-            return ServiceResponse.FromError(new(HttpStatusCode.Conflict, result.Error!.Message, ErrorCodes.CannotAdd));
+            return result;
         }
 
         var newAnnouncement = await _repository.GetAsync(new AnnouncementSpec(announcement.Id), cancellationToken);
@@ -198,7 +202,7 @@ public class AnnouncementService : IAnnouncementService
             {
                 Title = "Announcement updated",
                 Content = "Announcement \"" + oldTitle + "\" was updated"
-            }, true, announcement.Id, requestingUser);
+            }, true, announcement.Id, requestingUser, null);
 
             if (!resultNotification.IsOk)
             {

@@ -61,7 +61,7 @@ public class NotificationController : AuthorizedController
         var currentUser = await GetCurrentUser();
 
         return currentUser.Result != null ?
-            this.FromServiceResponse(await _notificationService.AddNotificationForAnnouncement(notification, false, announcementId, currentUser.Result)) :
+            this.FromServiceResponse(await _notificationService.AddNotificationForAnnouncement(notification, false, announcementId, currentUser.Result, null)) :
             this.ErrorMessageResult(currentUser.Error);
     }
 
