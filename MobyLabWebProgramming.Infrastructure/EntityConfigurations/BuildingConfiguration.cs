@@ -18,6 +18,11 @@ public class BuildingConfiguration : IEntityTypeConfiguration<Building>
             .IsRequired();
         builder.Property(e => e.Year)
             .IsRequired(false);
+        builder.Property(e => e.Floor)
+            .IsRequired(false);
+        builder.Property(e => e.SpecificCharacteristics)
+            .HasMaxLength(1023)
+            .IsRequired(false);
         builder.HasOne(e => e.Address)
             .WithMany(e => e.Buildings)
             .HasForeignKey(e => e.AddressId)

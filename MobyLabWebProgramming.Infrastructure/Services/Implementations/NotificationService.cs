@@ -77,7 +77,7 @@ public class NotificationService : INotificationService
             return ServiceResponse.FromError(new(HttpStatusCode.Forbidden, "You haven't permissions to update notifications!", ErrorCodes.CannotAdd));
         }
 
-        var newNotification = await _repository.GetAsync(new NotificationBasicSpec(notification.Id), cancellationToken);
+        var newNotification = await _repository.GetAsync(new NotificationSpec(notification.Id), cancellationToken);
 
         if (newNotification != null)
         {
