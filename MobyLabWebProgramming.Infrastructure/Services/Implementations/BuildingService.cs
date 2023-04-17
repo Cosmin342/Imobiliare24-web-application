@@ -18,7 +18,7 @@ public class BuildingService : IBuildingService
 
     public async Task<ServiceResponse<BuildingDTO>> GetBuilding(Guid id, CancellationToken cancellationToken = default)
     {
-        var result = await _repository.GetAsync(new BuildingSpec(id), cancellationToken);
+        var result = await _repository.GetAsync(new BuildingProjectionSpec(id), cancellationToken);
 
         return result != null ?
             ServiceResponse<BuildingDTO>.ForSuccess(result) :
@@ -27,14 +27,14 @@ public class BuildingService : IBuildingService
 
     public async Task<ServiceResponse<PagedResponse<BuildingDTO>>> GetBuildings(PaginationSearchQueryParams pagination, int? roomsNumber, CancellationToken cancellationToken = default)
     {
-        var result = await _repository.PageAsync(pagination, new BuildingSpec(roomsNumber), cancellationToken);
+        var result = await _repository.PageAsync(pagination, new BuildingProjectionSpec(roomsNumber), cancellationToken);
 
         return ServiceResponse<PagedResponse<BuildingDTO>>.ForSuccess(result);
     }
 
     public async Task<ServiceResponse<Building>> GetBuildingNonDTO(Guid id, CancellationToken cancellationToken = default)
     {
-        var result = await _repository.GetAsync(new BuildingAddSpec(id), cancellationToken);
+        var result = await _repository.GetAsync(new BuildingSpec(id), cancellationToken);
 
         return result != null ?
             ServiceResponse<Building>.ForSuccess(result) :
@@ -61,7 +61,7 @@ public class BuildingService : IBuildingService
             address.Result = (await _addressService.GetAddressByFields(building.Address.County, building.Address.City, building.Address.Street, building.Address.Number, cancellationToken)).Result;
         }
 
-        var newBuilding = await _repository.GetAsync(new BuildingAddSpec(building.Surface, building.RoomsNumber, building.Year, address.Result!.Id), cancellationToken);
+        var newBuilding = await _repository.GetAsync(new BuildingSpec(building.Surface, building.RoomsNumber, building.Year, address.Result!.Id), cancellationToken);
 
         if (newBuilding != null)
         {
@@ -89,7 +89,7 @@ public class BuildingService : IBuildingService
 
     public async Task<ServiceResponse> Update(BuildingUpdateDTO building, UserDTO? requestingUser = default, CancellationToken cancellationToken = default)
     {
-        var newBuilding = await _repository.GetAsync(new BuildingAddSpec(building.Id), cancellationToken);
+        var newBuilding = await _repository.GetAsync(new BuildingSpec(building.Id), cancellationToken);
 
         if (newBuilding != null)
         {
@@ -107,7 +107,7 @@ public class BuildingService : IBuildingService
 
     public async Task<ServiceResponse> DeleteBuilding(Guid id, UserDTO? requestingUser = default, CancellationToken cancellationToken = default)
     {
-        var building = await _repository.GetAsync(new BuildingAddSpec(id), cancellationToken);
+        var building = await _repository.GetAsync(new BuildingSpec(id), cancellationToken);
 
         if (building == null)
         {
@@ -126,7 +126,7 @@ public class BuildingService : IBuildingService
 
     public async Task<ServiceResponse> UpdateAnnouncementId(Guid anouncementId, Guid buildingId, UserDTO? requestingUser = default, CancellationToken cancellationToken = default)
     {
-        var newBuilding = await _repository.GetAsync(new BuildingAddSpec(buildingId), cancellationToken);
+        var newBuilding = await _repository.GetAsync(new BuildingSpec(buildingId), cancellationToken);
 
         if (newBuilding != null)
         {

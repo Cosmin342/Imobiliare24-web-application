@@ -20,7 +20,7 @@ public class AddressService : IAddressService
 
     public async Task<ServiceResponse<AddressDTO>> GetAddressById(Guid id, CancellationToken cancellationToken = default)
     {
-        var result = await _repository.GetAsync(new AddressSpec(id), cancellationToken);
+        var result = await _repository.GetAsync(new AddressProjectionSpec(id), cancellationToken);
 
         return result != null ?
             ServiceResponse<AddressDTO>.ForSuccess(result) :
@@ -29,14 +29,14 @@ public class AddressService : IAddressService
 
     public async Task<ServiceResponse<PagedResponse<AddressDTO>>> GetAddresses(PaginationSearchQueryParams pagination, UserDTO? requestingUser, CancellationToken cancellationToken = default)
     {
-        var result = await _repository.PageAsync(pagination, new AddressSpec(pagination.Search), cancellationToken);
+        var result = await _repository.PageAsync(pagination, new AddressProjectionSpec(pagination.Search), cancellationToken);
 
         return ServiceResponse<PagedResponse<AddressDTO>>.ForSuccess(result);
     }
 
     public async Task<ServiceResponse<AddressDTO>> GetAddressByFields(string city, string county, string street, int streetNumber, CancellationToken cancellationToken = default)
     {
-        var result = await _repository.GetAsync(new AddressSpec(city, county, street, streetNumber), cancellationToken);
+        var result = await _repository.GetAsync(new AddressProjectionSpec(city, county, street, streetNumber), cancellationToken);
 
         return result != null ?
             ServiceResponse<AddressDTO>.ForSuccess(result) :
@@ -45,7 +45,12 @@ public class AddressService : IAddressService
 
     public async Task<ServiceResponse<AddressDTO>> AddAddress(AddressAddDTO newAddress, UserDTO? requestingUser, CancellationToken cancellationToken = default)
     {
-        var address = await _repository.GetAsync(new AddressSpec(newAddress.City, newAddress.County, newAddress.Street, newAddress.Number), cancellationToken);
+        if (requestingUser != null && (requestingUser.Role != UserRoleEnum.Admin && requestingUser.Role != UserRoleEnum.Personnel))
+        {
+            return ServiceResponse<AddressDTO>.FromError(new(HttpStatusCode.Forbidden, "Only an admin or a personnel user can add addresses!", ErrorCodes.CannotAdd));
+        }
+
+        var address = await _repository.GetAsync(new AddressProjectionSpec(newAddress.City, newAddress.County, newAddress.Street, newAddress.Number), cancellationToken);
 
         if (address != null)
         {
@@ -71,6 +76,7 @@ public class AddressService : IAddressService
             Number = result.Number
         });
     }
+
     public async Task<ServiceResponse<Address>> GetNonDTOAddressById(Guid id, CancellationToken cancellationToken = default)
     {
         var address = await _addressRepository.GetAddressWithBuildings(id, cancellationToken);
@@ -82,14 +88,19 @@ public class AddressService : IAddressService
 
     public async Task<ServiceResponse> Update(AddressDTO address, UserDTO? requestingUser = default, CancellationToken cancellationToken = default)
     {
-        var newAddress = await _repository.GetAsync(new AddressAddSpec(address.Id), cancellationToken);
+        if (requestingUser != null && requestingUser.Role != UserRoleEnum.Admin)
+        {
+            return ServiceResponse<AddressDTO>.FromError(new(HttpStatusCode.Forbidden, "Only an admin can update addresses!", ErrorCodes.CannotUpdate));
+        }
+
+        var newAddress = await _repository.GetAsync(new AddressSpec(address.Id), cancellationToken);
 
         if (newAddress != null)
         {
-            newAddress.Street = address.Street;
+            newAddress.Street = address.Street ?? newAddress.Street;
             newAddress.Number = address.Number;
-            newAddress.City = address.City;
-            newAddress.County = address.County;
+            newAddress.City = address.City ?? newAddress.City;
+            newAddress.County = address.County ?? newAddress.County;
 
             await _repository.UpdateAsync(newAddress, cancellationToken);
 
@@ -108,7 +119,7 @@ public class AddressService : IAddressService
 
         var result = await GetNonDTOAddressById(id);
 
-        if (result != null && result.Result.Buildings.Count != 0)
+        if (result.Result != null && result.Result.Buildings.Count != 0)
         {
             return ServiceResponse.FromError(new(HttpStatusCode.Forbidden, "There are some buildings registered at this address!", ErrorCodes.CannotDelete));
         }

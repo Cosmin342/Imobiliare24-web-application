@@ -2,7 +2,7 @@
 using MobyLabWebProgramming.Core.Specifications;
 using System.Linq.Expressions;
 
-public sealed class NotificationSpec : BaseSpec<NotificationSpec, Notification, NotificationDTO>
+public sealed class NotificationProjectionSpec : BaseSpec<NotificationProjectionSpec, Notification, NotificationDTO>
 {
     protected override Expression<Func<Notification, NotificationDTO>> Spec => e => new()
     {
@@ -11,7 +11,7 @@ public sealed class NotificationSpec : BaseSpec<NotificationSpec, Notification, 
         Content = e.Content,
     };
 
-    public NotificationSpec(Guid id) : base(id)
+    public NotificationProjectionSpec(Guid id) : base(id)
     {
     }
 }

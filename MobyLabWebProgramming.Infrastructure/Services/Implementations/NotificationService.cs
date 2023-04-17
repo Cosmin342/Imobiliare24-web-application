@@ -23,7 +23,7 @@ public class NotificationService : INotificationService
 
     public async Task<ServiceResponse<NotificationDTO>> GetNotification(Guid id, CancellationToken cancellationToken = default)
     {
-        var result = await _repository.GetAsync(new NotificationSpec(id), cancellationToken);
+        var result = await _repository.GetAsync(new NotificationProjectionSpec(id), cancellationToken);
 
         return result != null ?
             ServiceResponse<NotificationDTO>.ForSuccess(result) :

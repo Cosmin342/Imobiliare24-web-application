@@ -13,6 +13,7 @@ namespace MobyLabWebProgramming.Backend.Controllers;
 public class AddressController : AuthorizedController
 {
     private readonly IAddressService _addressService;
+
     public AddressController(IUserService userService, IAddressService addressService) : base(userService)
     {
         _addressService = addressService;

@@ -1,40 +1,16 @@
 ﻿using Ardalis.Specification;
-using Microsoft.EntityFrameworkCore;
-using MobyLabWebProgramming.Core.Entities;
 using MobyLabWebProgramming.Core.Specifications;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 
-public sealed class AddressSpec : BaseSpec<AddressSpec, Address, AddressDTO>
+public sealed class AddressSpec : BaseSpec<AddressSpec, Address>
 {
-    protected override Expression<Func<Address, AddressDTO>> Spec => e => new()
-    {
-        Id = e.Id,
-        City = e.City,
-        County = e.County,
-        Number = e.Number,
-        Street = e.Street
-    };
-
     public AddressSpec(Guid id) : base(id)
     {
-    }
-
-    public AddressSpec(string city, string county, string street, int streetNumber)
-    {
-        Query.Where(e => e.City == city && e.County == county && e.Street == street && e.Number == streetNumber);
-    }
-
-    public AddressSpec(string? search)
-    {
-        search = !string.IsNullOrWhiteSpace(search) ? search.Trim() : null;
-
-        if (search == null)
-        {
-            return;
-        }
-
-        var searchExpr = $"%{search.Replace(" ", "%")}%";
-
-        Query.Where(e => EF.Functions.ILike(e.Street, searchExpr));
     }
 }

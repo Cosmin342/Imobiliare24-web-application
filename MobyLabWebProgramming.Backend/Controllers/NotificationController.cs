@@ -55,8 +55,8 @@ public class NotificationController : AuthorizedController
     }
 
     [Authorize]
-    [HttpPost]
-    public async Task<ActionResult<RequestResponse>> Add([FromBody] NotificationAddDTO notification, [FromBody] Guid announcementId)
+    [HttpPost("{announcementId:guid}")]
+    public async Task<ActionResult<RequestResponse>> Add([FromBody] NotificationAddDTO notification, [FromRoute] Guid announcementId)
     {
         var currentUser = await GetCurrentUser();
 
