@@ -64,32 +64,37 @@ public class BuildingService : IBuildingService
             address.Result = (await _addressService.GetAddressByFields(building.Address.County, building.Address.City, building.Address.Street, building.Address.Number, cancellationToken)).Result;
         }
 
-        var newBuilding = await _repository.GetAsync(new BuildingSpec(building.Surface, building.RoomsNumber, building.Year, address.Result!.Id), cancellationToken);
+        var newBuilding = await _repository.GetAsync(new BuildingSpec(building.Surface, building.RoomsNumber, building.Year, address.Result!.Id, true), cancellationToken);
         if (newBuilding != null)
         {
             return ServiceResponse<BuildingDTO>.FromError(new(HttpStatusCode.Conflict, "There is already a building at that address!", ErrorCodes.CannotAdd));
         }
 
-        newBuilding = new Building()
-        {
-            Surface = building.Surface,
-            RoomsNumber = building.RoomsNumber,
-            Year = building.Year,
-            SpecificCharacteristics = building.SpecificCharacteristics,
-            Floor = building.Floor,
-            AddressId = address.Result.Id,
-        };
+        newBuilding = await _repository.GetAsync(new BuildingSpec(building.Surface, building.RoomsNumber, building.Year, address.Result!.Id, false), cancellationToken);
 
-        var addedBuilding = await _repository.AddAsync(newBuilding, cancellationToken);
+        if (newBuilding == null)
+        {
+            newBuilding = new Building()
+            {
+                Surface = building.Surface,
+                RoomsNumber = building.RoomsNumber,
+                Year = building.Year,
+                SpecificCharacteristics = building.SpecificCharacteristics,
+                Floor = building.Floor,
+                AddressId = address.Result.Id,
+            };
+            
+            newBuilding = await _repository.AddAsync(newBuilding, cancellationToken);
+        }
 
         return ServiceResponse<BuildingDTO>.ForSuccess(new BuildingDTO
         {
-            Id = addedBuilding.Id,
-            RoomsNumber = addedBuilding.RoomsNumber,
-            Surface = addedBuilding.Surface,
-            Year = addedBuilding.Year,
-            Floor = addedBuilding.Floor,
-            SpecificCharacteristics = addedBuilding.SpecificCharacteristics,
+            Id = newBuilding.Id,
+            RoomsNumber = newBuilding.RoomsNumber,
+            Surface = newBuilding.Surface,
+            Year = newBuilding.Year,
+            Floor = newBuilding.Floor,
+            SpecificCharacteristics = newBuilding.SpecificCharacteristics,
             Address = address.Result
         });
     }

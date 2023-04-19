@@ -9,8 +9,13 @@ public sealed class BuildingSpec : BaseSpec<BuildingSpec, Building>
     {
     }
 
-    public BuildingSpec(int surface, int roomsNumber, int year, Guid addressId)
+    public BuildingSpec(int surface, int roomsNumber, int year, Guid addressId, bool withAnnouncement)
     {
-        Query.Where(e => e.Surface == surface && e.RoomsNumber == roomsNumber && e.Surface == surface && e.AddressId == addressId && e.Announcement != null);
+        if (withAnnouncement)
+        {
+            Query.Where(e => e.Surface == surface && e.RoomsNumber == roomsNumber && e.Surface == surface && e.AddressId == addressId && e.AnnouncementId != Guid.Empty);
+            return;
+        }
+        Query.Where(e => e.Surface == surface && e.RoomsNumber == roomsNumber && e.Surface == surface && e.AddressId == addressId);
     }
 }
