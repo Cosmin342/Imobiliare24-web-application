@@ -79,6 +79,21 @@ public class AnnouncementController : AuthorizedController
     }
 
     [Authorize]
+    [HttpDelete("{announcementId:guid}")]
+    public async Task<ActionResult<RequestResponse>> Unsubscribe([FromRoute] Guid announcementId)
+    {
+        var currentUser = await GetCurrentUser();
+
+        return currentUser.Result != null ?
+            this.FromServiceResponse(await _announcementService.UnsubscribeToAnnouncement(new AnnouncementUserAddDTO
+            {
+                UserId = currentUser.Result.Id,
+                AnnouncementId = announcementId
+            })) :
+            this.ErrorMessageResult(currentUser.Error);
+    }
+
+    [Authorize]
     [HttpDelete("{id:guid}")]
     public async Task<ActionResult<RequestResponse>> Delete([FromRoute] Guid id)
     {

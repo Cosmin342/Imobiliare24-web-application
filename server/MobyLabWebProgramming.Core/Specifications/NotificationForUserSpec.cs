@@ -12,6 +12,7 @@ public sealed class NotificationForUserSpec : BaseSpec<NotificationForUserSpec, 
         Id = e.Notification.Id,
         Title = e.Notification.Title,
         Content = e.Notification.Content,
+        CreatedAt = e.Notification.CreatedAt,
     };
 
     public NotificationForUserSpec(string? search, Guid userId)

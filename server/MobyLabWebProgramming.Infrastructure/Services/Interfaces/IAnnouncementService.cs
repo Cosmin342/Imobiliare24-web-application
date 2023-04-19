@@ -12,4 +12,5 @@ public interface IAnnouncementService
     public Task<ServiceResponse> DisableAnnouncement(Guid id, UserDTO requestingUser, CancellationToken cancellationToken = default);
     public Task<ServiceResponse> Update(AnnouncementUpdateDTO announcement, UserDTO? requestingUser = default, CancellationToken cancellationToken = default);
     public Task<ServiceResponse> SubscribeToAnnouncement(AnnouncementUserAddDTO announcementUser, CancellationToken cancellationToken = default);
+    public Task<ServiceResponse> UnsubscribeToAnnouncement(AnnouncementUserAddDTO announcementUser, CancellationToken cancellationToken = default);
 }

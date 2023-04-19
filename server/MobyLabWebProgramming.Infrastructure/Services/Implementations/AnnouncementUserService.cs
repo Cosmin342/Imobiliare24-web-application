@@ -33,6 +33,20 @@ public class AnnouncementUserService : IAnnouncementUserService
         return ServiceResponse.ForSuccess();
     }
 
+    public async Task<ServiceResponse> DeleteAnnouncementUserAssociation(AnnouncementUserAddDTO announcementUser, CancellationToken cancellationToken = default)
+    {
+        var result = await _repository.GetAsync(new AnnouncementUserAddSpec(announcementUser.AnnouncementId, announcementUser.UserId), cancellationToken);
+
+        if (result == null)
+        {
+            return ServiceResponse.FromError(new(HttpStatusCode.Forbidden, "This user is not subscribed to this announcement!", ErrorCodes.CannotAdd));
+        }
+
+        await _repository.DeleteAsync<AnnouncementUser>(result.Id, cancellationToken);
+
+        return ServiceResponse.ForSuccess();
+    }
+
     public async Task<ServiceResponse<List<UserDTO>>> GetUsersForAnnouncement(Guid announcementId, CancellationToken cancellationToken = default)
     {
         var result = await _repository.ListAsync(new SubscribedUsersSpec(announcementId), cancellationToken);

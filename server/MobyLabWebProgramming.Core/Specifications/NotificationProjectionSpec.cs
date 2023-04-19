@@ -9,6 +9,7 @@ public sealed class NotificationProjectionSpec : BaseSpec<NotificationProjection
         Id = e.Id,
         Title = e.Title,
         Content = e.Content,
+        CreatedAt = e.CreatedAt,
     };
 
     public NotificationProjectionSpec(Guid id) : base(id)

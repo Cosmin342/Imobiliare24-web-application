@@ -146,7 +146,7 @@ public class AnnouncementService : IAnnouncementService
 
         if (announcement != null)
         {
-            if (announcement.UserId != requestingUser.Id || requestingUser.Role != UserRoleEnum.Admin)
+            if (announcement.UserId != requestingUser.Id && requestingUser.Role != UserRoleEnum.Admin)
             {
                 return ServiceResponse.FromError(new(HttpStatusCode.Forbidden, "Only the user who posted this announcement on an administrator can disable it!", ErrorCodes.CannotUpdate));
             }
@@ -225,6 +225,25 @@ public class AnnouncementService : IAnnouncementService
         }
 
         var result = await _announcementUserService.AddAnnouncementUserAssociation(announcementUser);
+
+        if (!result.IsOk)
+        {
+            return ServiceResponse.FromError(result.Error);
+        }
+
+        return ServiceResponse.ForSuccess();
+    }
+
+    public async Task<ServiceResponse> UnsubscribeToAnnouncement(AnnouncementUserAddDTO announcementUser, CancellationToken cancellationToken = default)
+    {
+        var announcement = await GetAnnouncement(announcementUser.AnnouncementId);
+
+        if (announcement.Result != null && announcement.Result.UserId == announcementUser.UserId)
+        {
+            return ServiceResponse.FromError(new(HttpStatusCode.NotFound, "An user can not unsubscribe to his own announcement!", ErrorCodes.CannotAdd));
+        }
+
+        var result = await _announcementUserService.DeleteAnnouncementUserAssociation(announcementUser);
 
         if (!result.IsOk)
         {
