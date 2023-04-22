@@ -1,10 +1,12 @@
 {
     "globals.welcome": "Welcome!",
     "globals.login": "Login",
+    "globals.signup": "Sign Up",
     "globals.logout": "Logout",
     "globals.submit": "Submit",
     "globals.email": "E-mail",
     "globals.password": "Password",
+    "globals.confirmPassword": "Confirm password",
     "globals.refresh": "Refresh",
     "globals.loadingFailed": "Loading failed",
     "globals.loading": "Loading",
@@ -21,5 +23,6 @@
     "globals.file": "File",
     "globals.placeholders.textInput": "Please enter {fieldName}",
     "globals.placeholders.selectInput": "Please select the {fieldName}",
-    "globals.validations.requiredField": "{fieldName} is a required field!"
+    "globals.validations.requiredField": "{fieldName} is a required field!",
+    "globals.validations.confirmPassword": "Passwords doesn't match!"
 }

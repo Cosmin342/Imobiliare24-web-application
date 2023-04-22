@@ -120,6 +120,16 @@ export const Navbar = () => {
                 </Button>
               )}
             </Grid>
+            {!loggedIn && (
+              <Grid container item direction="column" xs={1}>
+                <Button color="inherit">
+                  {" "}
+                  <Link style={{ color: "white" }} to={AppRoute.SignUp}>
+                    {formatMessage({ id: "globals.signup" })}
+                  </Link>
+                </Button>
+              </Grid>
+            )}
           </Grid>
         </Toolbar>
       </AppBar>
