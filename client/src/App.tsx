@@ -4,6 +4,7 @@ import { AppIntlProvider } from "@presentation/components/ui/AppIntlProvider";
 import { ToastNotifier } from "@presentation/components/ui/ToastNotifier";
 import { HomePage } from "@presentation/pages/HomePage";
 import { LoginPage } from "@presentation/pages/LoginPage";
+import { NotificationsPage } from "@presentation/pages/NotificationPage";
 import { SignUpPage } from "@presentation/pages/SignUpPage";
 import { UserFilesPage } from "@presentation/pages/UserFilesPage";
 import { UsersPage } from "@presentation/pages/UsersPage";
@@ -20,6 +21,7 @@ export function App() {
         <Route path={AppRoute.Index} element={<HomePage />} /> {/* Add a new route with a element as the page. */}
         <Route path={AppRoute.Login} element={<LoginPage />} />
         <Route path={AppRoute.SignUp} element={<SignUpPage />} />
+        <Route path={AppRoute.Notifications} element={<NotificationsPage />} />
         {isAdmin && <Route path={AppRoute.Users} element={<UsersPage />} />} {/* If the user doesn't have the right role this route shouldn't be used. */}
         {isAdmin && <Route path={AppRoute.UserFiles} element={<UserFilesPage />} />}
       </Routes>

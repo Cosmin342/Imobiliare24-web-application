@@ -57,27 +57,54 @@ export const Navbar = () => {
               </Link>
             </Grid>
             <Grid container item direction="column" xs={10}>
-              {isAdmin && (
-                <Grid // If the user is logged in and it is an admin they can have new menu items shown.
+              {loggedIn && (
+                <Grid
                   container
                   item
                   direction="row"
                   xs={12}
                   alignItems="center"
                   wrap="nowrap"
-                  columnSpacing={15}
+                  columnSpacing={18}
                 >
+                  {isAdmin && (
+                    <>
+                      <Grid container item direction="column" xs={1}>
+                        <Button color="inherit">
+                          <Link style={{ color: "white" }} to={AppRoute.Users}>
+                            {formatMessage({ id: "globals.users" })}
+                          </Link>
+                        </Button>
+                      </Grid>
+                      <Grid container item direction="column" xs={1}>
+                        <Button color="inherit">
+                          <Link
+                            style={{ color: "white" }}
+                            to={AppRoute.UserFiles}
+                          >
+                            {formatMessage({ id: "globals.files" })}
+                          </Link>
+                        </Button>
+                      </Grid>
+                    </>
+                  )}
                   <Grid container item direction="column" xs={1}>
                     <Button color="inherit">
-                      <Link style={{ color: "white" }} to={AppRoute.Users}>
-                        {formatMessage({ id: "globals.users" })}
+                      <Link
+                        style={{ color: "white" }}
+                        to={AppRoute.Announcements}
+                      >
+                        {formatMessage({ id: "globals.announcements" })}
                       </Link>
                     </Button>
                   </Grid>
                   <Grid container item direction="column" xs={1}>
                     <Button color="inherit">
-                      <Link style={{ color: "white" }} to={AppRoute.UserFiles}>
-                        {formatMessage({ id: "globals.files" })}
+                      <Link
+                        style={{ color: "white" }}
+                        to={AppRoute.Notifications}
+                      >
+                        {formatMessage({ id: "globals.notifications" })}
                       </Link>
                     </Button>
                   </Grid>
