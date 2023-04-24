@@ -6,5 +6,8 @@
     "labels.no": "No",
     "labels.actions": "Actions",
     "labels.addUser": "Add user",
-    "labels.addUserFile": "Add file"
+    "labels.addUserFile": "Add file",
+    "labels.addAnnouncement": "Add announcement",
+    "labels.deleteNotification": "Delete notification",
+    "labels.deleteAnnouncement": "Delete announcement"
 }

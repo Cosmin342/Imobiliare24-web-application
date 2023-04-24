@@ -88,3 +88,8 @@ button:focus-visible {
 .website__footer {
   background-color: #1976d2;
 }
+
+.Dialog_container {
+  white-space: pre-wrap;
+    word-wrap: break-word;
+}

@@ -2,6 +2,7 @@ import { useIntl } from "react-intl";
 import { isUndefined } from "lodash";
 import {
   Button,
+  Checkbox,
   Dialog,
   DialogActions,
   DialogContent,
@@ -17,25 +18,29 @@ import {
   TableRow,
 } from "@mui/material";
 import { DataLoadingContainer } from "../../LoadingDisplay";
-import { NotificationDTO, UserRoleEnum } from "@infrastructure/apis/client";
+import { AnnouncementDTO, UserRoleEnum } from "@infrastructure/apis/client";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { UserAddDialog } from "../../Dialogs/UserAddDialog";
-import { useAppSelector } from "@application/store";
-import { useNotificationTableController } from "./NotificationTable.controller";
-import moment from "moment";
 import { useState } from "react";
-import { useOwnUserHasRole } from "@infrastructure/hooks/useOwnUser";
+import {
+  useOwnUser,
+  useOwnUserHasRole,
+} from "@infrastructure/hooks/useOwnUser";
+import { useAnnouncementTableController } from "./AnnouncementTable.controller";
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import { AnnouncementDeleteDialog } from "../../Dialogs/AnnouncementDialogs/AnnouncementDeleteDialog";
+import { AnnouncementViewDialog } from "../../Dialogs/AnnouncementDialogs/AnnouncementViewDialog";
+import { AnnouncementAddDialog } from "../../Dialogs/AnnouncementDialogs/AnnouncementAddDialog";
 
 /**
  * This hook returns a header for the table with translated columns.
  */
-const useHeader = (): { key: keyof NotificationDTO; name: string }[] => {
+const useHeader = (): { key: keyof AnnouncementDTO; name: string }[] => {
   const { formatMessage } = useIntl();
 
   return [
     { key: "title", name: formatMessage({ id: "globals.title" }) },
-    { key: "content", name: formatMessage({ id: "globals.content" }) },
-    { key: "createdAt", name: formatMessage({ id: "globals.createdAt" }) },
+    { key: "price", name: formatMessage({ id: "globals.price" }) },
+    { key: "isActive", name: formatMessage({ id: "globals.isActive" }) },
   ];
 };
 
@@ -43,7 +48,7 @@ const useHeader = (): { key: keyof NotificationDTO; name: string }[] => {
  * The values in the table are organized as rows so this function takes the entries and creates the row values ordering them according to the order map.
  */
 const getRowValues = (
-  entries: NotificationDTO[] | null | undefined,
+  entries: AnnouncementDTO[] | null | undefined,
   orderMap: { [key: string]: number }
 ) =>
   entries?.map((entry) => {
@@ -61,7 +66,7 @@ const getRowValues = (
 /**
  * Creates the user table.
  */
-export const NotificationTable = () => {
+export const AnnouncementTable = () => {
   const { formatMessage } = useIntl();
   const header = useHeader();
   const orderMap = header.reduce((acc, e, i) => {
@@ -76,11 +81,14 @@ export const NotificationTable = () => {
     tryReload,
     labelDisplay,
     remove,
-  } = useNotificationTableController(); // Use the controller hook.
+  } = useAnnouncementTableController(); // Use the controller hook.
   const rowValues = getRowValues(pagedData?.data, orderMap); // Get the row values.
   const [renderModal, setRenderModal] = useState(false);
+  const [renderViewModal, setRenderViewModal] = useState(false);
   const [entryId, setEntryId] = useState("");
+  const [entry, setEntry] = useState(undefined as unknown as AnnouncementDTO);
   const isAdmin = useOwnUserHasRole(UserRoleEnum.Admin);
+  const userData = useOwnUser();
 
   return (
     <DataLoadingContainer
@@ -90,7 +98,8 @@ export const NotificationTable = () => {
     >
       {" "}
       {/* Wrap the table into the loading container because data will be fetched from the backend and is not immediately available.*/}
-      {isAdmin && <UserAddDialog />}
+      {(userData?.role === UserRoleEnum.Admin ||
+        userData?.role === UserRoleEnum.Personnel) && <AnnouncementAddDialog />}
       {!isUndefined(pagedData) &&
         !isUndefined(pagedData?.totalCount) &&
         !isUndefined(pagedData?.page) &&
@@ -128,21 +137,37 @@ export const NotificationTable = () => {
               <TableRow key={`row_${rowIndex + 1}`}>
                 {data.map((keyValue, index) => (
                   <TableCell key={`cell_${rowIndex + 1}_${index + 1}`}>
-                    {keyValue.value instanceof Date
-                      ? moment(keyValue.value).format("DD/MM/YYYY hh:mm:ss")
-                      : keyValue.value}
+                    {typeof keyValue.value === "boolean" ? (
+                      <Checkbox
+                        disabled
+                        checked={keyValue.value === true ? true : false}
+                      />
+                    ) : (
+                      keyValue.value
+                    )}
                   </TableCell>
                 ))}
                 <TableCell>
+                  {(userData?.role === UserRoleEnum.Admin ||
+                    userData?.role === UserRoleEnum.Personnel) && (
+                    <IconButton
+                      color="error"
+                      onClick={() => {
+                        setRenderModal(true);
+                        setEntryId(entry.id || "");
+                      }}
+                    >
+                      <DeleteIcon color="error" fontSize="small" />
+                    </IconButton>
+                  )}
                   <IconButton
                     color="error"
-                    // onClick={() => remove(entry.id || "")}
                     onClick={() => {
-                      setRenderModal(true);
-                      setEntryId(entry.id || "");
+                      setRenderViewModal(true);
+                      setEntry(entry);
                     }}
                   >
-                    <DeleteIcon color="error" fontSize="small" />
+                    <VisibilityIcon color="info" fontSize="small" />
                   </IconButton>
                 </TableCell>
               </TableRow>
@@ -150,26 +175,17 @@ export const NotificationTable = () => {
           </TableBody>
         </Table>
       </TableContainer>
-      <Dialog open={renderModal} onClose={() => setRenderModal(false)}>
-        <DialogTitle>
-          {formatMessage({ id: "labels.deleteNotification" })}
-        </DialogTitle>
-        <DialogContent>{formatMessage({ id: "notifications.messages.deleteNotification" })}</DialogContent>
-        <DialogActions>
-          <Button onClick={() => setRenderModal(false)}>
-            {formatMessage({ id: "labels.no" })}
-          </Button>
-          <Button
-            onClick={() => {
-              setRenderModal(false);
-              remove(entryId);
-            }}
-            autoFocus
-          >
-            {formatMessage({ id: "labels.yes" })}
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <AnnouncementDeleteDialog
+        renderModal={renderModal}
+        setRenderModal={setRenderModal}
+        remove={remove}
+        entryId={entryId}
+      />
+      <AnnouncementViewDialog
+        renderModal={renderViewModal}
+        setRenderModal={setRenderViewModal}
+        entry={entry}
+      />
     </DataLoadingContainer>
   );
 };

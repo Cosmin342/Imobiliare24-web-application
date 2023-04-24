@@ -1,6 +1,8 @@
 {
     "notifications.messages.authenticationSuccess": "You logged in successfully!",
     "notifications.messages.signUpSuccess": "User registered successfully!",
+    "notifications.messages.deleteNotification": "Are you sure you want to delete this notification?",
+    "notifications.messages.deleteAnnouncement": "Are you sure you want to delete this announcement?",
     "notifications.errors.sessionExpired": "The session has expired, please login again!",
     "notifications.errors.unknownHappened": "An unknown error occurred!",
     "notifications.errors.networkError": "A network error occurred, please verify your internet connection!",
