@@ -9,14 +9,24 @@ import { useAnnouncementApi } from "@infrastructure/apis/api-management/announce
  * This is controller hook manages the table state including the pagination and data retrieval from the backend.
  */
 export const useAnnouncementTableController = () => {
-    const { getAnnouncements: { key: queryKey, query }, deleteAnnouncement: { key: deleteUserKey, mutation: deleteUser } } = useAnnouncementApi(); // Use the API hook.
+    const { 
+        getAnnouncements: { key: queryKey, query },
+        deleteAnnouncement: { key: deleteAnnouncementKey, mutation: deleteAnnouncement },
+        subscribeToAnnouncement: { key: subscribeKey, mutation: subscribeToAnnouncement }
+    } = useAnnouncementApi(); // Use the API hook.
     const queryClient = useQueryClient(); // Get the query client.
     const { page, pageSize, setPagination } = usePaginationController(); // Get the pagination state.
     const { data, isError, isLoading } = useQuery([queryKey, page, pageSize], () => query({ page, pageSize })); // Retrieve the table page from the backend via the query hook.
-    const { mutateAsync: deleteMutation } = useMutation([deleteUserKey], deleteUser); // Use a mutation to remove an entry.
+    const { mutateAsync: deleteMutation } = useMutation([deleteAnnouncementKey], deleteAnnouncement); // Use a mutation to remove an entry.
+    const { mutateAsync: subscribeMutation } = useMutation([subscribeKey], subscribeToAnnouncement);
+
     const remove = useCallback(
         (id: string) => deleteMutation(id).then(() => queryClient.invalidateQueries([queryKey])),
         [queryClient, deleteMutation, queryKey]); // Create the callback to remove an entry.
+
+    const subscribe = useCallback(
+        (id: string) => subscribeMutation(id).then(() => queryClient.invalidateQueries([queryKey])),
+        [queryClient, subscribeMutation, queryKey]);
 
     const tryReload = useCallback(
         () => queryClient.invalidateQueries([queryKey]),
@@ -30,6 +40,7 @@ export const useAnnouncementTableController = () => {
         pagedData: data?.response,
         isError,
         isLoading,
-        remove
+        remove,
+        subscribe
     };
 }

@@ -27,6 +27,7 @@ import {
 } from "@infrastructure/hooks/useOwnUser";
 import { useAnnouncementTableController } from "./AnnouncementTable.controller";
 import VisibilityIcon from "@mui/icons-material/Visibility";
+import TaskAltIcon from '@mui/icons-material/TaskAlt';
 import { AnnouncementDeleteDialog } from "../../Dialogs/AnnouncementDialogs/AnnouncementDeleteDialog";
 import { AnnouncementViewDialog } from "../../Dialogs/AnnouncementDialogs/AnnouncementViewDialog";
 import { AnnouncementAddDialog } from "../../Dialogs/AnnouncementDialogs/AnnouncementAddDialog";
@@ -81,6 +82,7 @@ export const AnnouncementTable = () => {
     tryReload,
     labelDisplay,
     remove,
+    subscribe
   } = useAnnouncementTableController(); // Use the controller hook.
   const rowValues = getRowValues(pagedData?.data, orderMap); // Get the row values.
   const [renderModal, setRenderModal] = useState(false);
@@ -168,6 +170,14 @@ export const AnnouncementTable = () => {
                     }}
                   >
                     <VisibilityIcon color="info" fontSize="small" />
+                  </IconButton>
+                  <IconButton
+                    color="error"
+                    onClick={() => {
+                      subscribe(entry.id || "")
+                    }}
+                  >
+                    <TaskAltIcon color="success" fontSize="small" />
                   </IconButton>
                 </TableCell>
               </TableRow>

@@ -9,6 +9,7 @@ const getAnnouncementsQueryKey = "getAnnouncementsQuery";
 const getAnnouncementQueryKey = "getAnnouncementQuery";
 const addAnnouncementMutationKey = "addAnnouncementMutation";
 const deleteAnnouncementMutationKey = "deleteAnnouncementMutation";
+const subscribeToAnnouncementMutationKey = "subscribeToAnnouncementMutation";
 
 /**
  * Returns the an object with the callbacks that can be used for the React Query API, in this case to manage the Announcement API.
@@ -21,6 +22,7 @@ export const useAnnouncementApi = () => {
     const getAnnouncement = (id: string) => new AnnouncementApi(config).apiAnnouncementGetByIdIdGet({ id });
     const addAnnouncement = (Announcement: AnnouncementAddDTO) => new AnnouncementApi(config).apiAnnouncementAddPost({ announcementAddDTO: Announcement });
     const deleteAnnouncement = (id: string) => new AnnouncementApi(config).apiAnnouncementDeleteIdDelete({ id });
+    const subscribeToAnnouncement = (announcementId: string) => new AnnouncementApi(config).apiAnnouncementSubscribeAnnouncementIdPost({ announcementId });
 
     return {
         getAnnouncements: { // Return the query object.
@@ -38,6 +40,10 @@ export const useAnnouncementApi = () => {
         deleteAnnouncement: {
             key: deleteAnnouncementMutationKey,
             mutation: deleteAnnouncement
+        },
+        subscribeToAnnouncement: {
+            key: subscribeToAnnouncementMutationKey,
+            mutation: subscribeToAnnouncement
         }
     }
 }
