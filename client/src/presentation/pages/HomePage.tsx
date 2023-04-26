@@ -21,7 +21,7 @@ export const HomePage = memo(() => {
             <div className="HomePage_container">
               <h1>Imobiliare24</h1>
               <br />
-              <ApartmentIcon style={{ color: "white" }} fontSize="large" />
+              <ApartmentIcon fontSize="large" />
               {formatMessage({ id: "globals.descriptionSite" })}
               <br />
               {formatMessage({ id: "globals.loginMessage" })}
