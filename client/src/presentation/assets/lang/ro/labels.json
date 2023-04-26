@@ -4,10 +4,14 @@
     "labels.paginationLabelOverflow": "{from}-{to} din mai mult de {to}",
     "labels.yes": "Da",
     "labels.no": "Nu",
+    "labels.id": "Id",
     "labels.actions": "Actiuni",
     "labels.addUser": "Adauga utilizator",
     "labels.addUserFile": "Adauga fisier",
     "labels.addAnnouncement": "Adauga anunt",
+    "labels.addNotification": "Trimite notificare",
+    "labels.subscribe": "Urmariti anunturi",
     "labels.deleteNotification": "Sterge notificare",
-    "labels.deleteAnnouncement": "Sterge anunt"
+    "labels.deleteAnnouncement": "Sterge anunt",
+    "labels.unsubscribe": "Dezabonare"
 }

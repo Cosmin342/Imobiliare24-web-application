@@ -3,6 +3,7 @@
     "notifications.messages.signUpSuccess": "Utilizatorul a fost inregistrat cu succes!",
     "notifications.messages.deleteNotification": "Esti sigur ca vrei sa stergi aceasta notificare?",
     "notifications.messages.deleteAnnouncement": "Esti sigur ca vrei sa stergi acest anunt?",
+    "notifications.messages.unsubscribeAnnouncement": "Esti sigur ca vrei sa te dezabonezi de la acest anunt?",
     "notifications.errors.sessionExpired": "Sesiunea a expirat, vă rugăm să vă conectați din nou!",
     "notifications.errors.unknownHappened": "A apărut o eroare necunoscută!",
     "notifications.errors.networkError": "A apărut o eroare de rețea, vă rugăm să vă verificați conexiunea la internet!",

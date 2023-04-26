@@ -6,7 +6,7 @@ import { SignUpForm } from "@presentation/components/forms/SignUp/SignUpForm";
 
 export const SignUpPage = memo(() => {
     return <Fragment>
-        <Seo title="MobyLab Web App | Sign Up" />
+        <Seo title="Imobiliare24 | Sign Up" />
         <WebsiteLayout>
             <Box sx={{ padding: "0px 50px 0px 50px", justifyItems: "center" }}>
                 <SignUpForm />

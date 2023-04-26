@@ -13,11 +13,12 @@
   -moz-osx-font-smoothing: grayscale;
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
+  width: 100% !important;
 }
 
 a {
   font-weight: 500;
-  color: #646cff;
+  color: #6970ff;
   text-decoration: inherit;
 }
 a:hover {
@@ -31,6 +32,7 @@ body {
   min-width: 320px;
   min-height: 100vh;
   justify-content: center;
+  background-image: linear-gradient(#f3eeef, #e0f0fe);
 }
 
 h1 {
@@ -78,18 +80,22 @@ button:focus-visible {
 }
 
 .UserBox_admin {
-  color: #ff9a9a;
+  color: #f88b8b;
 }
 
 .UserBox_personnel {
-  color: #f5ad48;
-}
-
-.website__footer {
-  background-color: #1976d2;
+  color: #c0ff81;
 }
 
 .Dialog_container {
   white-space: pre-wrap;
     word-wrap: break-word;
+}
+
+.css-11b3ww9-MuiPaper-root-MuiAppBar-root {
+  background-color: #5d2ff1 !important;
+}
+
+.HomePage_container {
+  text-align: center;
 }

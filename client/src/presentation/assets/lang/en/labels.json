@@ -4,10 +4,14 @@
     "labels.paginationLabelOverflow": "{from}-{to} of more than {to}",
     "labels.yes": "Yes",
     "labels.no": "No",
+    "labels.id": "Id",
     "labels.actions": "Actions",
     "labels.addUser": "Add user",
     "labels.addUserFile": "Add file",
     "labels.addAnnouncement": "Add announcement",
+    "labels.addNotification": "Send notification",
+    "labels.subscribe": "Subscribe to announcements",
     "labels.deleteNotification": "Delete notification",
-    "labels.deleteAnnouncement": "Delete announcement"
+    "labels.deleteAnnouncement": "Delete announcement",
+    "labels.unsubscribe": "Unsubscribe"
 }

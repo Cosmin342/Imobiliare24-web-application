@@ -108,6 +108,16 @@ export const Navbar = () => {
                       </Link>
                     </Button>
                   </Grid>
+                  <Grid container item direction="column" xs={1}>
+                    <Button color="inherit">
+                      <Link
+                        style={{ color: "white" }}
+                        to={AppRoute.Subscriptions}
+                      >
+                        {formatMessage({ id: "globals.followed" })}
+                      </Link>
+                    </Button>
+                  </Grid>
                 </Grid>
               )}
             </Grid>

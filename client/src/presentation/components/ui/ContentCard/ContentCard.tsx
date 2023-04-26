@@ -18,7 +18,7 @@ export const ContentCard = memo(
     return (
       <div id={id} className="content__card__container">
         {showTitle && <h4>{title}</h4>}
-        <div className="content__card__body">{children}</div>
+        <h3 className="content__card__body">{children}</h3>
       </div>
     );
   }

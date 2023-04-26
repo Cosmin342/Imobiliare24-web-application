@@ -1,5 +1,7 @@
 {
     "globals.welcome": "Bine ati venit!",
+    "globals.descriptionSite": "Locul unde iti poti gasi apartmentul perfect",
+    "globals.loginMessage": "Creaza-ti un cont sau logheaza-te si incepe sa cumperi sau sa vinzi",
     "globals.login": "Autentificare",
     "globals.signup": "Cont nou",
     "globals.logout": "Iesire",
@@ -12,8 +14,10 @@
     "globals.loading": "Se incarca",
     "globals.users": "Utilizatori",
     "globals.files": "Fisiere",
+    "globals.announcement": "Codul anuntului",
     "globals.announcements": "Anunturi",
     "globals.notifications": "Notificari",
+    "globals.followed": "Urmarite",
     "globals.name": "Nume",
     "globals.role": "Rol",
     "globals.admin": "Administrator",

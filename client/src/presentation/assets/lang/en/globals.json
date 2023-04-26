@@ -1,5 +1,7 @@
 {
     "globals.welcome": "Welcome!",
+    "globals.descriptionSite": "The place where you can find the perfect apartment",
+    "globals.loginMessage": "Make an account or login and start to buy or sell",
     "globals.login": "Login",
     "globals.signup": "Sign Up",
     "globals.logout": "Logout",
@@ -12,8 +14,10 @@
     "globals.loading": "Loading",
     "globals.users": "Users",
     "globals.files": "Files",
+    "globals.announcement": "Announcement id",
     "globals.announcements": "Announcements",
     "globals.notifications": "Notifications",
+    "globals.followed": "Followed",
     "globals.name": "Name",
     "globals.role": "Role",
     "globals.admin": "Admin",

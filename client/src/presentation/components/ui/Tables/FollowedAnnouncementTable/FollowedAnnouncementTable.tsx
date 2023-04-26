@@ -1,12 +1,7 @@
 import { useIntl } from "react-intl";
 import { isUndefined } from "lodash";
 import {
-  Button,
   Checkbox,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
   IconButton,
   Paper,
   Table,
@@ -25,12 +20,14 @@ import {
   useOwnUser,
   useOwnUserHasRole,
 } from "@infrastructure/hooks/useOwnUser";
-import { useAnnouncementTableController } from "./AnnouncementTable.controller";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import TaskAltIcon from "@mui/icons-material/TaskAlt";
 import { AnnouncementDeleteDialog } from "../../Dialogs/AnnouncementDialogs/AnnouncementDeleteDialog";
 import { AnnouncementViewDialog } from "../../Dialogs/AnnouncementDialogs/AnnouncementViewDialog";
 import { AnnouncementAddDialog } from "../../Dialogs/AnnouncementDialogs/AnnouncementAddDialog";
+import { useFollowedAnnouncementTableController } from "./FollowedAnnouncementTable.controller";
+import { AnnouncementUnsubscribeDialog } from "../../Dialogs/AnnouncementDialogs/AnnouncementUnsubscribeDialog";
+import { AnnouncementSubscribeDialog } from "../../Dialogs/AnnouncementDialogs/AnnouncementSubscribeDialog";
 
 /**
  * This hook returns a header for the table with translated columns.
@@ -67,7 +64,7 @@ const getRowValues = (
 /**
  * Creates the user table.
  */
-export const AnnouncementTable = (props: { disableButtons?: boolean }) => {
+export const FollowedAnnouncementTable = () => {
   const { formatMessage } = useIntl();
   const header = useHeader();
   const orderMap = header.reduce((acc, e, i) => {
@@ -82,15 +79,13 @@ export const AnnouncementTable = (props: { disableButtons?: boolean }) => {
     tryReload,
     labelDisplay,
     remove,
-    subscribe,
-  } = useAnnouncementTableController(); // Use the controller hook.
+  } = useFollowedAnnouncementTableController(); // Use the controller hook.
   const rowValues = getRowValues(pagedData?.data, orderMap); // Get the row values.
   const [renderModal, setRenderModal] = useState(false);
   const [renderViewModal, setRenderViewModal] = useState(false);
   const [entryId, setEntryId] = useState("");
   const [entry, setEntry] = useState(undefined as unknown as AnnouncementDTO);
   const isAdmin = useOwnUserHasRole(UserRoleEnum.Admin);
-  const userData = useOwnUser();
 
   return (
     <DataLoadingContainer
@@ -100,9 +95,7 @@ export const AnnouncementTable = (props: { disableButtons?: boolean }) => {
     >
       {" "}
       {/* Wrap the table into the loading container because data will be fetched from the backend and is not immediately available.*/}
-      {(userData?.role === UserRoleEnum.Admin ||
-        userData?.role === UserRoleEnum.Personnel) &&
-        !props.disableButtons && <AnnouncementAddDialog />}
+      <AnnouncementSubscribeDialog />
       {!isUndefined(pagedData) &&
         !isUndefined(pagedData?.totalCount) &&
         !isUndefined(pagedData?.page) &&
@@ -158,19 +151,15 @@ export const AnnouncementTable = (props: { disableButtons?: boolean }) => {
                 <TableCell>{entry.building?.surface} m<sup>2</sup></TableCell>
                 {isAdmin && <TableCell>{entry.id}</TableCell>}
                 <TableCell>
-                  {(userData?.role === UserRoleEnum.Admin ||
-                    userData?.role === UserRoleEnum.Personnel) &&
-                    !props.disableButtons && (
-                      <IconButton
-                        color="error"
-                        onClick={() => {
-                          setRenderModal(true);
-                          setEntryId(entry.id || "");
-                        }}
-                      >
-                        <DeleteIcon color="error" fontSize="small" />
-                      </IconButton>
-                    )}
+                  <IconButton
+                    color="error"
+                    onClick={() => {
+                      setRenderModal(true);
+                      setEntryId(entry.id || "");
+                    }}
+                  >
+                    <DeleteIcon color="error" fontSize="small" />
+                  </IconButton>
                   <IconButton
                     color="error"
                     onClick={() => {
@@ -180,21 +169,13 @@ export const AnnouncementTable = (props: { disableButtons?: boolean }) => {
                   >
                     <VisibilityIcon color="info" fontSize="small" />
                   </IconButton>
-                  <IconButton
-                    color="error"
-                    onClick={() => {
-                      subscribe(entry.id || "");
-                    }}
-                  >
-                    <TaskAltIcon color="success" fontSize="small" />
-                  </IconButton>
                 </TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
       </TableContainer>
-      <AnnouncementDeleteDialog
+      <AnnouncementUnsubscribeDialog
         renderModal={renderModal}
         setRenderModal={setRenderModal}
         remove={remove}

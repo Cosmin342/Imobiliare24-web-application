@@ -25,6 +25,7 @@ import { useNotificationTableController } from "./NotificationTable.controller";
 import moment from "moment";
 import { useState } from "react";
 import { useOwnUserHasRole } from "@infrastructure/hooks/useOwnUser";
+import { NotificationAddDialog } from "../../Dialogs/NotificationAddDialog/NotificationAddDialog";
 
 /**
  * This hook returns a header for the table with translated columns.
@@ -90,7 +91,7 @@ export const NotificationTable = () => {
     >
       {" "}
       {/* Wrap the table into the loading container because data will be fetched from the backend and is not immediately available.*/}
-      {isAdmin && <UserAddDialog />}
+      {isAdmin && <NotificationAddDialog />}
       {!isUndefined(pagedData) &&
         !isUndefined(pagedData?.totalCount) &&
         !isUndefined(pagedData?.page) &&
